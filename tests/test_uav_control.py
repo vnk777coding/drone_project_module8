@@ -142,6 +142,21 @@ class TestUAVControl(unittest.TestCase):
         result = self.uav.wait_command_ack(mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, timeout=1)
         self.assertFalse(result)
 
+    def test_land_success(self):
+        """Проверка успешной посадки БПЛА"""
+        mock_master = MagicMock()
+        mock_master.mode_mapping.return_value = {'LAND': 9}
+
+        uav = UAVControl.__new__(UAVControl)
+        uav.master = mock_master
+        uav.wait_command_ack = MagicMock(return_value = True)
+
+        uav.land()
+
+        mock_master.set_mode.assert_called_with(9)
+        uav.wait_command_ack.assert_called_with(mavutil.mavlink.MAV_CMD_NAV_LAND)
+        assert uav.wait_command_ack.call_count == 1
+        
 
 if __name__ == "__main__":
     unittest.main()
