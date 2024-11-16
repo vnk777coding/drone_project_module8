@@ -1,6 +1,7 @@
 """импортируем модуль uav_control для тестирования класса UAVControl"""
 
 import unittest
+import pytest
 from unittest.mock import MagicMock, patch
 from pymavlink import mavutil
 from uav_control import UAVControl
@@ -149,14 +150,25 @@ class TestUAVControl(unittest.TestCase):
 
         uav = UAVControl.__new__(UAVControl)
         uav.master = mock_master
-        uav.wait_command_ack = MagicMock(return_value = True)
+        uav.wait_command_ack = MagicMock(return_value=True)
 
         uav.land()
 
         mock_master.set_mode.assert_called_with(9)
         uav.wait_command_ack.assert_called_with(mavutil.mavlink.MAV_CMD_NAV_LAND)
         assert uav.wait_command_ack.call_count == 1
-        
+
+    def test_land_command_ack_failure(self):
+        """Проверяет поведение при неприятия команды посадки"""
+        mock_master = MagicMock()
+        mock_master.mode_mapping.return_value = {'LAND': 9}
+        uav = UAVControl.__new__(UAVControl)
+        uav.master = mock_master
+        uav.wait_command_ack = MagicMock(return_value=False)
+
+        with pytest.raises(RuntimeError, match="Failed to land: Команда для посадки не подтверждена"):
+            uav.land()
+
 
 if __name__ == "__main__":
     unittest.main()

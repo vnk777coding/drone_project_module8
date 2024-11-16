@@ -200,7 +200,7 @@ class UAVControl:
             logger.info("БПЛА выполняет посадку")
         except Exception as e:
             logger.error("Ошибка при посадке: %s", e)
-            raise RuntimeError(f"Провал посадки: {e}") from e
+            raise RuntimeError(f"Failed to land: {e}") from e
 
     def goto(self, lat: float, lon: float, alt: float) -> None:
         """
