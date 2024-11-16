@@ -191,6 +191,17 @@ class UAVControl:
         logger.error("Не получено подтверждение для команды %s", command)
         return False
 
+    def land(self):
+        """Функция осуществляющая посадку БПЛА"""
+        try:
+            self.set_mode('LAND')
+            if not self.wait_command_ack(mavutil.mavlink.MAV_CMD_NAV_LAND):
+                raise RuntimeError("Команда для посадки не подтверждена")
+            logger.info("БПЛА выполняет посадку")
+        except Exception as e:
+            logger.error("Ошибка при посадке: %s", e)
+            raise RuntimeError(f"Провал посадки: {e}") from e
+
     def goto(self, lat: float, lon: float, alt: float) -> None:
         """
         Команда на полёт к заданным координатам.
