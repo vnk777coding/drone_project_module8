@@ -124,6 +124,47 @@ class TestUAVControl(unittest.TestCase):
         self.assertEqual(telemetry['roll'], 0.1)
         self.assertEqual(telemetry['pitch'], 0.2)
         self.assertEqual(telemetry['yaw'], 0.3)
+        
+    def test_get_telemetry_vfr_hud(self):
+        """Проверяет корректность полученных данных скорости и направления"""
+        mock_msg = MagicMock()
+        mock_msg.get_type.return_value = 'VFR_HUD'
+        mock_msg.groundspeed = 15.0
+        mock_msg.airspeed = 16.0
+        mock_msg.heading = 90
+
+        mock_master = MagicMock()
+        mock_master.recv_match.return_value = mock_msg
+
+        uav = UAVControl.__new__(UAVControl)
+        uav.master = mock_master
+
+        telemetry = uav.get_telemetry()
+
+        assert telemetry == {
+            'groundspeed': 15.0,
+            'airspeed': 16.0,
+            'heading': 90
+        }
+        
+    def test_get_telemetry_sys_status(self):
+        """Проверяет корректность полученных данных о состоянии батареи"""
+        mock_msg = MagicMock()
+        mock_msg.get_type.return_value = 'SYS_STATUS'
+        mock_msg.voltage_battery = 11000  # Напряжение передается в мВ
+        mock_msg.battery_remaining = 80  # Это значение передается в процентах
+        
+        mock_master = MagicMock()
+        mock_master.recv_match.return_value = mock_msg
+        
+        uav = UAVControl.__new__(UAVControl)
+        uav.master = mock_master
+        
+        telemetry = uav.get_telemetry()
+        assert telemetry == {
+            'battery_voltage': 11.0,
+            'battery_remaining': 80
+        }
 
     def test_wait_command_ack(self):
         """Проверка ожидания подтверждения команды"""
