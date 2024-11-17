@@ -1,0 +1,35 @@
+name: Start test drone project Module 8 Task 8_3_2
+
+on: [push]
+
+jobs:
+    test:
+        name: Run tests
+        runs-on: windows-latest
+
+        steps:
+             - name: Checkout repository
+               uses: actions/checkout@v4
+
+             - name: Setup Python
+               uses: actions/setup-python@v5
+               with:
+                   python-version: '3.8'
+
+             - name: test
+               run: |
+                    pip install -r requirements.txt
+                    export PYTHONPATH=$PYTHONPATH:$(pwd)
+                    pytest
+
+             - name: coverage
+               run: |
+                    pip install -r requirements.txt
+                    pip install pytest coverage pytest-cov
+                    export PYTHONPATH=$PYTHONPATH:$(pwd)
+                    pytest --cov=uav_control --cov-report=xml
+
+             - name: lint
+                run: |
+                     pip install pylint
+                     pylint uav_control.py 
