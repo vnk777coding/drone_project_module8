@@ -130,10 +130,11 @@ class UAVControl:
         """
         try:
             msg = self.master.recv_match(
-                type=['GLOBAL_POSITION_INT', 'ATTITUDE'], blocking=True, timeout=5)
+                type=['GLOBAL_POSITION_INT', 'ATTITUDE', 'VFR_HUD', 'SYS_STATUS'], blocking=True, timeout=5)
             if msg:
                 telemetry = {}
-                if msg.get_type() == 'GLOBAL_POSITION_INT':
+                msg_type = msg.get_type()  # Добаили эту строку
+                if msg_type == 'GLOBAL_POSITION_INT':
                     telemetry['lat'] = msg.lat / 1e7
                     telemetry['lon'] = msg.lon / 1e7
                     telemetry['alt'] = msg.alt / 1000
@@ -144,7 +145,7 @@ class UAVControl:
                         raise ValueError("Некорректная широта")
                     if not -180.0 <= telemetry['lon'] <= 180.0:
                         raise ValueError("Некорректная долгота")
-                elif msg.get_type() == 'ATTITUDE':
+                elif msg_type == 'ATTITUDE':
                     telemetry['roll'] = msg.roll
                     telemetry['pitch'] = msg.pitch
                     telemetry['yaw'] = msg.yaw
@@ -158,6 +159,13 @@ class UAVControl:
                         raise ValueError("Некорректный тангаж")
                     if not -math.pi <= telemetry['yaw'] <= math.pi:
                         raise ValueError("Некорректное рыскание")
+                elif msg_type == 'VFR_HUD':  # Добавили эту строку в соответствии с заданием 1.2
+                    telemetry['groundspeed'] = msg.groundspeed  # Добавили эту строку в соответствии с заданием 1.2
+                    telemetry['airspeed'] = msg.airspeed  # Добавили эту строку в соответствии с заданием 1.2
+                    telemetry['heading'] = msg.heading  # Добавили эту строку в соответствии с заданием 1.2
+                elif msg_type == 'SYS_STATUS':  # Добавили эту строку в соответствии с заданием 1.2
+                    telemetry['battery_voltage'] = msg.voltage_battery / 1000  # Напряжение получаем в Вольтах 
+                    telemetry['battery_remaining'] = msg.battery_remaining  # Напряжение получаем в процентах
                 return telemetry
             logger.warning("Телеметрия недоступна")
             return None
