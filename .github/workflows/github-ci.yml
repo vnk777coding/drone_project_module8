@@ -30,6 +30,6 @@ jobs:
                     pytest --cov=uav_control --cov-report=xml
 
              - name: lint
-                run: |
+               run: |
                      pip install pylint
                      pylint uav_control.py 
